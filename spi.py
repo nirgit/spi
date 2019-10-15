@@ -220,6 +220,30 @@ class NodeVisitor(object):
         raise Exception('No visit_{} method'.format(type(node).__name__))
 
 
+class RPNVisitor(object):
+    def visit(self, node):
+        method_name = 'visit_' + type(node).__name__ + '_rpn'
+        visitor = getattr(self, method_name, self.generic_visit)
+        return visitor(node)
+
+    def visit_BinOp_rpn(self, node):
+        return self.visit(node.left) + ' ' + self.visit(node.right) + ' ' + node.op.value
+
+    def visit_Num_rpn(self, node):
+        return str(node.value)
+
+    def generic_visit(self, node):
+        raise Exception('No visit_{} method'.format(type(node).__name__))
+
+
+class RPNInterpreter(RPNVisitor):
+    def __init__(self, parser):
+        self.parser = parser
+
+    def interpret(self):
+        tree = self.parser.parse()
+        return self.visit(tree)
+
 class Interpreter(NodeVisitor):
     def __init__(self, parser):
         self.parser = parser
@@ -256,7 +280,7 @@ def main():
 
         lexer = Lexer(text)
         parser = Parser(lexer)
-        interpreter = Interpreter(parser)
+        interpreter = RPNInterpreter(parser)
         result = interpreter.interpret()
         print(result)
 
