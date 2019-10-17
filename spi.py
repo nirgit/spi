@@ -135,6 +135,13 @@ class Num(AST):
         self.value = token.value
 
 
+class UnaryOp(AST):
+    def __init__(self, op, expr):
+        # the unary operation +-
+        self.op = op
+        # the parsed node the operation is applied on 
+        self.expr = expr
+
 class Parser(object):
     def __init__(self, lexer):
         self.lexer = lexer
@@ -155,7 +162,7 @@ class Parser(object):
             self.error()
 
     def factor(self):
-        """factor : INTEGER | LPAREN expr RPAREN"""
+        """factor : INTEGER | LPAREN expr RPAREN | (UNARY) expr"""
         token = self.current_token
         if token.type == INTEGER:
             self.eat(INTEGER)
@@ -165,6 +172,16 @@ class Parser(object):
             node = self.expr()
             self.eat(RPAREN)
             return node
+        elif token.type == MINUS:
+            self.eat(MINUS)
+            expr = self.expr()
+            return UnaryOp(token, expr)
+        elif token.type == PLUS:
+            self.eat(PLUS)
+            expr = self.expr()
+            return UnaryOp(token, expr)
+    
+
 
     def term(self):
         """term : factor ((MUL | DIV) factor)*"""
@@ -185,7 +202,7 @@ class Parser(object):
         """
         expr   : term ((PLUS | MINUS) term)*
         term   : factor ((MUL | DIV) factor)*
-        factor : INTEGER | LPAREN expr RPAREN
+        factor : INTEGER | LPAREN expr RPAREN | (PLUS | MINUS)* factor
         """
         node = self.term()
 
@@ -278,6 +295,12 @@ class Interpreter(NodeVisitor):
     def __init__(self, parser):
         self.parser = parser
 
+    def visit_UnaryOp(self, node):
+        if node.op.type == PLUS:
+            return self.visit(node.expr)
+        elif node.op.type == MINUS:
+            return -self.visit(node.expr)
+
     def visit_BinOp(self, node):
         if node.op.type == PLUS:
             return self.visit(node.left) + self.visit(node.right)
@@ -310,9 +333,9 @@ def main():
 
         lexer = Lexer(text)
         parser = Parser(lexer)
-        #interpreter = Interpreter(parser)
+        interpreter = Interpreter(parser)
         #interpreter = RPNInterpreter(parser)
-        interpreter = LispInterpreter(parser)
+        #interpreter = LispInterpreter(parser)
         result = interpreter.interpret()
         print(result)
 
