@@ -40,8 +40,8 @@ class Token(object):
 
 
 RESERVED_KEYWORDS = {
-    'BEGIN': Token('BEGIN', 'BEGIN'),
-    'END': Token('END', 'END'),
+    'BEGIN': Token(BEGIN, BEGIN),
+    'END': Token(END, END),
 }
 
 
@@ -52,6 +52,8 @@ class Lexer(object):
         # self.pos is an index into self.text
         self.pos = 0
         self.current_char = self.text[self.pos]
+        if self.current_char is not None:
+            self.current_char = self.current_char.upper()
 
     def error(self):
         raise Exception('Invalid character')
@@ -62,7 +64,7 @@ class Lexer(object):
         if self.pos > len(self.text) - 1:
             self.current_char = None  # Indicates end of input
         else:
-            self.current_char = self.text[self.pos]
+            self.current_char = self.text[self.pos].upper()
 
     def peek(self):
         peek_pos = self.pos + 1
