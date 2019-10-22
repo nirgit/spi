@@ -42,6 +42,7 @@ class Token(object):
 RESERVED_KEYWORDS = {
     'BEGIN': Token(BEGIN, BEGIN),
     'END': Token(END, END),
+    'DIV': Token(DIV, 'div')
 }
 
 
@@ -133,10 +134,6 @@ class Lexer(object):
             if self.current_char == '*':
                 self.advance()
                 return Token(MUL, '*')
-
-            if self.current_char == '/':
-                self.advance()
-                return Token(DIV, '/')
 
             if self.current_char == '(':
                 self.advance()
